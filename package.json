@@ -1,0 +1,14 @@
+{
+  "name": "telecom-mock-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plan degisikligi akisi icin bagimliliksiz mock API",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
