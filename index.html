@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Telecom agent scenarios and mock API catalog" />
+    <title>Telecom Agent API Lab</title>
+    <style>
+      :root {
+        --ink: #17212b;
+        --muted: #647180;
+        --paper: #f4f1e9;
+        --card: rgba(255, 255, 255, 0.82);
+        --line: rgba(23, 33, 43, 0.13);
+        --navy: #132f3a;
+        --teal: #0d766e;
+        --mint: #d9efe8;
+        --orange: #ef8354;
+        --yellow: #f6d365;
+        --blue: #4c7df0;
+        --red: #b94c4c;
+        --shadow: 0 22px 60px rgba(31, 45, 52, 0.12);
+        --radius: 24px;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 8% 2%, rgba(246, 211, 101, 0.33), transparent 28rem),
+          radial-gradient(circle at 93% 20%, rgba(13, 118, 110, 0.18), transparent 32rem),
+          var(--paper);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      a { color: inherit; }
+      code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+
+      .shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 24px 0;
+      }
+      .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: -0.02em; }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        color: white;
+        background: var(--navy);
+        border-radius: 12px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.16);
+      }
+      .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+      .nav-links a {
+        padding: 9px 12px;
+        color: var(--muted);
+        text-decoration: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 650;
+      }
+      .nav-links a:hover { color: var(--ink); background: rgba(255,255,255,.6); }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 72px 64px 56px;
+        color: white;
+        background: var(--navy);
+        border-radius: 34px;
+        box-shadow: var(--shadow);
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        width: 430px;
+        height: 430px;
+        right: -170px;
+        top: -190px;
+        border: 84px solid rgba(217, 239, 232, 0.12);
+        border-radius: 50%;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        color: #bfe6dd;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+      .eyebrow::before { content: ""; width: 28px; height: 2px; background: var(--orange); }
+      h1 {
+        max-width: 780px;
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(45px, 7vw, 82px);
+        font-weight: 500;
+        line-height: .98;
+        letter-spacing: -.045em;
+      }
+      .hero p { max-width: 670px; margin: 28px 0 0; color: #c8d5d8; font-size: 18px; line-height: 1.7; }
+      .hero-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 38px; }
+      .stat {
+        min-width: 135px;
+        padding: 15px 18px;
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 16px;
+      }
+      .stat strong { display: block; color: white; font-size: 22px; }
+      .stat span { color: #9db4b9; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+
+      .section { padding: 86px 0 0; }
+      .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 28px; margin-bottom: 28px; }
+      .kicker { margin: 0 0 9px; color: var(--teal); font-size: 12px; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
+      h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(34px, 4vw, 51px); font-weight: 500; letter-spacing: -.035em; }
+      .section-heading > p { max-width: 460px; margin: 0; color: var(--muted); line-height: 1.65; }
+
+      .scenario-list { display: grid; gap: 24px; }
+      .scenario {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        overflow: hidden;
+        background: var(--card);
+        border: 1px solid rgba(255,255,255,.7);
+        border-radius: var(--radius);
+        box-shadow: 0 10px 35px rgba(33, 48, 52, .06);
+      }
+      .scenario-side { position: relative; padding: 30px; border-right: 1px solid var(--line); }
+      .scenario-side::before { content: attr(data-index); position: absolute; right: 22px; top: 12px; color: rgba(23,33,43,.07); font-family: Georgia, serif; font-size: 80px; }
+      .scenario-icon { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 58px; color: white; background: var(--teal); border-radius: 15px; font-size: 22px; }
+      .scenario h3 { position: relative; margin: 0 0 12px; font-size: 23px; letter-spacing: -.025em; }
+      .prompt { position: relative; margin: 0; color: var(--muted); line-height: 1.55; font-style: italic; }
+      .scenario-main { padding: 30px; }
+      .flow { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 4px 0 22px; scrollbar-width: thin; }
+      .flow-step { flex: 0 0 auto; padding: 9px 12px; color: var(--navy); background: var(--mint); border-radius: 999px; font-size: 12px; font-weight: 800; }
+      .arrow { color: #9aa6ab; font-size: 16px; }
+      .endpoint-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .endpoint {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        padding: 10px 12px;
+        background: rgba(244, 241, 233, .7);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      .method { flex: 0 0 auto; min-width: 40px; color: var(--teal); font-size: 10px; font-weight: 900; letter-spacing: .07em; }
+      .method.post { color: #c25730; }
+      .endpoint code { overflow: hidden; color: #31414b; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+      .tmf { margin-top: 20px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+      .tmf strong { color: var(--ink); }
+
+      .decision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .auth-cases { margin-top: 16px; }
+      .decision {
+        min-height: 150px;
+        padding: 22px;
+        background: #fffdf8;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+      }
+      .decision .num { display: inline-block; margin-bottom: 20px; color: var(--orange); font-family: Georgia, serif; font-size: 28px; }
+      .decision h3 { margin: 0 0 8px; font-size: 16px; }
+      .decision p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+      .fixture-panel { display: grid; grid-template-columns: 1.05fr .95fr; overflow: hidden; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); }
+      .fixture-copy { padding: 40px; }
+      .fixture-copy h3 { margin: 0 0 15px; font-family: Georgia, serif; font-size: 32px; font-weight: 500; }
+      .fixture-copy p { color: var(--muted); line-height: 1.7; }
+      .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 25px; }
+      .fact { padding: 12px 14px; background: var(--paper); border-radius: 12px; }
+      .fact small { display: block; margin-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+      .fact code { font-size: 12px; font-weight: 700; }
+      .terminal { padding: 38px; color: #d7e4e2; background: #172a31; }
+      .terminal-bar { display: flex; gap: 6px; margin-bottom: 26px; }
+      .terminal-bar i { width: 10px; height: 10px; border-radius: 50%; background: #ef8354; }
+      .terminal-bar i:nth-child(2) { background: #f6d365; }
+      .terminal-bar i:nth-child(3) { background: #74c69d; }
+      pre { margin: 0; overflow-x: auto; font-size: 13px; line-height: 1.8; white-space: pre-wrap; }
+      .terminal .dim { color: #80969a; }
+      .terminal .accent { color: #87d8c7; }
+
+      .guide-panel { overflow: hidden; background: #172a31; border-radius: var(--radius); box-shadow: var(--shadow); }
+      .guide-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(255,255,255,.1);
+      }
+      .guide-file { color: #a9bec2; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; }
+      .guide-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .guide-action {
+        padding: 9px 12px;
+        color: #d7e4e2;
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 10px;
+        font: 750 12px Inter, ui-sans-serif, system-ui, sans-serif;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .guide-action:hover { background: rgba(255,255,255,.13); }
+      .guide-action.primary { color: #12332f; background: #87d8c7; border-color: #87d8c7; }
+      .guide-action:disabled { cursor: wait; opacity: .5; }
+      .guide-code {
+        max-height: 560px;
+        margin: 0;
+        padding: 28px;
+        overflow: auto;
+        color: #d7e4e2;
+        font-size: 12px;
+        line-height: 1.75;
+        white-space: pre-wrap;
+      }
+
+      footer { display: flex; justify-content: space-between; gap: 20px; padding: 50px 0 42px; color: var(--muted); font-size: 13px; }
+      footer a { color: var(--teal); font-weight: 750; text-decoration: none; }
+
+      @media (max-width: 850px) {
+        .hero { padding: 52px 32px 40px; }
+        .scenario { grid-template-columns: 1fr; }
+        .scenario-side { border-right: 0; border-bottom: 1px solid var(--line); }
+        .scenario-icon { margin-bottom: 26px; }
+        .decision-grid { grid-template-columns: 1fr 1fr; }
+        .fixture-panel { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 600px) {
+        .shell { width: min(100% - 24px, 1180px); }
+        .nav-links { display: none; }
+        .hero { border-radius: 24px; }
+        .section { padding-top: 62px; }
+        .section-heading { align-items: start; flex-direction: column; }
+        .endpoint-grid, .decision-grid, .facts { grid-template-columns: 1fr; }
+        .scenario-main, .scenario-side, .fixture-copy, .terminal { padding: 24px; }
+        footer { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="shell nav">
+      <div class="brand"><span class="brand-mark">T</span> Telecom API Lab</div>
+      <nav class="nav-links" aria-label="Page sections">
+        <a href="#scenarios">Scenarios</a>
+        <a href="#auth">Auth Lab</a>
+        <a href="#agent-guide">Agent Guide</a>
+        <a href="#decisions">Decision Points</a>
+        <a href="#fixture">Test Data</a>
+        <a href="/health">Health</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <div class="eyebrow">Agent orchestration playground</div>
+        <h1>Not just one API. The right chain of decisions.</h1>
+        <p>A mock API catalog designed to test whether telecom agents can correlate customer, product, usage, billing, and service responses to produce well-reasoned actions.</p>
+        <div class="hero-stats">
+          <div class="stat"><strong>4</strong><span>Agent scenarios</span></div>
+          <div class="stat"><strong>34</strong><span>API endpoints</span></div>
+          <div class="stat"><strong>8</strong><span>TM Forum domains</span></div>
+          <div class="stat"><strong>0</strong><span>Dependencies</span></div>
+        </div>
+      </section>
+
+      <section class="section" id="scenarios">
+        <div class="section-heading">
+          <div><p class="kicker">API map</p><h2>Four real customer journeys</h2></div>
+          <p>Each card shows the sequence of calls the agent should follow and the corresponding TM Forum APIs.</p>
+        </div>
+
+        <div class="scenario-list">
+          <article class="scenario">
+            <div class="scenario-side" data-index="01">
+              <div class="scenario-icon">↗</div>
+              <h3>Plan Change</h3>
+              <p class="prompt">“Upgrade my plan to 20 GB.”</p>
+            </div>
+            <div class="scenario-main">
+              <div class="flow"><span class="flow-step">Customer</span><span class="arrow">→</span><span class="flow-step">Subscription</span><span class="arrow">→</span><span class="flow-step">Eligibility</span><span class="arrow">→</span><span class="flow-step">Offers</span><span class="arrow">→</span><span class="flow-step">Validation</span><span class="arrow">→</span><span class="flow-step">Order</span></div>
+              <div class="endpoint-grid">
+                <div class="endpoint"><b class="method post">POST</b><code>/api/customers/search</code></div>
+                <div class="endpoint"><b class="method">GET</b><code>/api/subscriptions</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/change-plan/eligibility</code></div>
+                <div class="endpoint"><b class="method">GET</b><code>/api/product-offerings</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/orders/validate</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/orders</code></div>
+              </div>
+              <div class="tmf"><strong>Focus:</strong> transaction + eligibility · <strong>TM Forum:</strong> TMF629, TMF637, TMF622</div>
+            </div>
+          </article>
+
+          <article class="scenario">
+            <div class="scenario-side" data-index="02">
+              <div class="scenario-icon">₺</div>
+              <h3>Bill Dispute</h3>
+              <p class="prompt">“Why is my bill TRY 1,800? Create a dispute if it is incorrect.”</p>
+            </div>
+            <div class="scenario-main">
+              <div class="flow"><span class="flow-step">Products</span><span class="arrow">→</span><span class="flow-step">Usage</span><span class="arrow">→</span><span class="flow-step">Bill</span><span class="arrow">→</span><span class="flow-step">Validation</span><span class="arrow">→</span><span class="flow-step">Ticket</span></div>
+              <div class="endpoint-grid">
+                <div class="endpoint"><b class="method">GET</b><code>/api/products</code></div>
+                <div class="endpoint"><b class="method">GET</b><code>/api/usage-records</code></div>
+                <div class="endpoint"><b class="method">GET</b><code>/api/customer-bills</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/charges/validate</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/trouble-tickets</code></div>
+                <div class="endpoint"><b class="method">GET</b><code>/api/trouble-tickets/:id</code></div>
+              </div>
+              <div class="tmf"><strong>Focus:</strong> reasoning + data correlation · <strong>TM Forum:</strong> TMF637, TMF635, TMF678, TMF621</div>
+            </div>
+          </article>
+
+          <article class="scenario">
+            <div class="scenario-side" data-index="03">
+              <div class="scenario-icon">⌁</div>
+              <h3>Internet Outage</h3>
+              <p class="prompt">“My internet has not worked for two hours.”</p>
+            </div>
+            <div class="scenario-main">
+              <div class="flow"><span class="flow-step">Service</span><span class="arrow">→</span><span class="flow-step">Known Problems</span><span class="arrow">→</span><span class="flow-step">Remote Test</span><span class="arrow">→</span><span class="flow-step">Ticket</span><span class="arrow">→</span><span class="flow-step">Appointment</span></div>
+              <div class="endpoint-grid">
+                <div class="endpoint"><b class="method">GET</b><code>/api/services</code></div>
+                <div class="endpoint"><b class="method">GET</b><code>/api/service-problems</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/service-tests</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/trouble-tickets</code></div>
+                <div class="endpoint"><b class="method">GET</b><code>/api/appointment-slots</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/appointments</code></div>
+              </div>
+              <div class="tmf"><strong>Focus:</strong> diagnosis + correct ticket decision · <strong>TM Forum:</strong> TMF638, TMF656, TMF621, TMF646</div>
+            </div>
+          </article>
+
+          <article class="scenario">
+            <div class="scenario-side" data-index="04">
+              <div class="scenario-icon">⌂</div>
+              <h3>Home Internet Relocation</h3>
+              <p class="prompt">“I want to move my internet service to my new address.”</p>
+            </div>
+            <div class="scenario-main">
+              <div class="flow"><span class="flow-step">Address</span><span class="arrow">→</span><span class="flow-step">Qualification</span><span class="arrow">→</span><span class="flow-step">Offers</span><span class="arrow">→</span><span class="flow-step">Quote</span><span class="arrow">→</span><span class="flow-step">Order</span><span class="arrow">→</span><span class="flow-step">Appointment</span></div>
+              <div class="endpoint-grid">
+                <div class="endpoint"><b class="method post">POST</b><code>/api/geographic-addresses/validate</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/service-qualifications</code></div>
+                <div class="endpoint"><b class="method">GET</b><code>/api/relocation-offers</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/quotes</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/relocation-orders</code></div>
+                <div class="endpoint"><b class="method post">POST</b><code>/api/appointments</code></div>
+              </div>
+              <div class="tmf"><strong>Focus:</strong> long multi-API orchestration · <strong>TM Forum:</strong> TMF673, TMF645, TMF648, TMF622, TMF646</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="auth">
+        <div class="section-heading">
+          <div><p class="kicker">Tool Flow security</p><h2>Managed auth, observable retries.</h2></div>
+          <p>A deterministic downstream harness for testing bearer forwarding, token providers, silent refresh, retry exhaustion, and OAuth2 Client Credentials.</p>
+        </div>
+        <div class="fixture-panel">
+          <div class="fixture-copy">
+            <h3>Auth service provider</h3>
+            <p>Use the login endpoint as an unconnected auth-service node. It returns a new generation token on every successful call, while the stats endpoint records counts without storing secrets.</p>
+            <div class="facts">
+              <div class="fact"><small>Provider endpoint</small><code>POST /api/auth/login</code></div>
+              <div class="fact"><small>Token path</small><code>data.access_token</code></div>
+              <div class="fact"><small>Username</small><code>toolflow-user</code></div>
+              <div class="fact"><small>Password</small><code>mock-password</code></div>
+              <div class="fact"><small>Protected API</small><code>GET /api/protected/resource</code></div>
+              <div class="fact"><small>Static API key</small><code>static-api-key</code></div>
+            </div>
+          </div>
+          <div class="terminal">
+            <div class="terminal-bar"><i></i><i></i><i></i></div>
+            <pre><span class="dim"># Reset counters before each test</span>
+<span class="accent">$</span> curl -X POST http://localhost:3000/api/test-auth/reset
+
+<span class="dim"># Inspect real provider and downstream calls</span>
+<span class="accent">$</span> curl http://localhost:3000/api/test-auth/stats
+
+<span class="dim"># Silent refresh: token-1 gets 401, token-2 succeeds</span>
+<span class="accent">$</span> curl "http://localhost:3000/api/protected/resource?scenario=REJECT_FIRST_GENERATION"</pre>
+          </div>
+        </div>
+        <div class="decision-grid auth-cases">
+          <article class="decision"><span class="num">401→200</span><h3>Silent refresh</h3><p><code>REJECT_FIRST_GENERATION</code> rejects token-1 and accepts the refreshed token.</p></article>
+          <article class="decision"><span class="num">401×2</span><h3>Retry exhaustion</h3><p><code>ALWAYS_401</code> verifies that only one downstream retry is attempted.</p></article>
+          <article class="decision"><span class="num">503</span><h3>Transient provider</h3><p><code>FAIL_TWICE_THEN_SUCCESS</code> fails twice, then returns a valid managed token.</p></article>
+          <article class="decision"><span class="num">Bearer</span><h3>Caller token</h3><p><code>caller-access-token</code> must arrive in the Authorization header, never X-API-Key.</p></article>
+          <article class="decision"><span class="num">Basic</span><h3>OAuth2 CC</h3><p><code>/api/oauth/token</code> validates HTTP Basic client authentication and form data.</p></article>
+          <article class="decision"><span class="num">0 leaks</span><h3>Safe observations</h3><p>Stats expose call counts and status codes, but never tokens, passwords, or client secrets.</p></article>
+        </div>
+      </section>
+
+      <section class="section" id="agent-guide">
+        <div class="section-heading">
+          <div><p class="kicker">Development handoff</p><h2>Copy once. Give it to your agent.</h2></div>
+          <p>A compact Markdown reference containing the API chains, required request fields, decision outputs, auth fixtures, and safety rules.</p>
+        </div>
+        <div class="guide-panel">
+          <div class="guide-toolbar">
+            <span class="guide-file">AGENT_API_CHAINS.md</span>
+            <div class="guide-actions">
+              <a class="guide-action" href="/agent-guide.md" target="_blank" rel="noreferrer">Open raw</a>
+              <a class="guide-action" href="/agent-guide.md" download="AGENT_API_CHAINS.md">Download .md</a>
+              <button class="guide-action primary" id="copy-agent-guide" type="button" disabled>Copy for your agent</button>
+            </div>
+          </div>
+          <pre class="guide-code" id="agent-guide-content" aria-live="polite">Loading agent guide…</pre>
+        </div>
+      </section>
+
+      <section class="section" id="decisions">
+        <div class="section-heading">
+          <div><p class="kicker">Agent evaluation</p><h2>Do not just call. Correlate.</h2></div>
+          <p>The mock data requires the agent to compare responses and arrive at the correct business decision.</p>
+        </div>
+        <div class="decision-grid">
+          <article class="decision"><span class="num">01</span><h3>Duplicate charge</h3><p>The same roaming usage appears in two bill items. The correct dispute amount is TRY 450.</p></article>
+          <article class="decision"><span class="num">02</span><h3>Package timing</h3><p>The roaming package becomes active after the usage, so the initial usage is not covered.</p></article>
+          <article class="decision"><span class="num">03</span><h3>Mass outage</h3><p>When a known mass outage exists, a second customer-specific trouble ticket should not be created.</p></article>
+          <article class="decision"><span class="num">04</span><h3>Fiber alternative</h3><p>If fiber is unavailable but DSL is serviceable, the agent should present the eligible DSL offer.</p></article>
+          <article class="decision"><span class="num">05</span><h3>No coverage</h3><p>If no fixed service is available, the agent must not create a quote or relocation order.</p></article>
+          <article class="decision"><span class="num">06</span><h3>Explicit approval</h3><p>An order or technician appointment is created only with <code>userConfirmed: true</code>.</p></article>
+        </div>
+      </section>
+
+      <section class="section" id="fixture">
+        <div class="section-heading">
+          <div><p class="kicker">Fixture data</p><h2>Run it in one minute</h2></div>
+        </div>
+        <div class="fixture-panel">
+          <div class="fixture-copy">
+            <h3>John Smith test customer</h3>
+            <p>All scenarios run within the same customer context. Created tickets, orders, and appointments remain in memory until the server restarts.</p>
+            <div class="facts">
+              <div class="fact"><small>MSISDN</small><code>905551112233</code></div>
+              <div class="fact"><small>Customer</small><code>CUST-1001</code></div>
+              <div class="fact"><small>Billing account</small><code>BA-1001</code></div>
+              <div class="fact"><small>Subscription</small><code>SUB-1001</code></div>
+              <div class="fact"><small>Bill</small><code>BILL-2026-07-1001</code></div>
+              <div class="fact"><small>Internet service</small><code>SERVICE-FTTH-1001</code></div>
+            </div>
+          </div>
+          <div class="terminal">
+            <div class="terminal-bar"><i></i><i></i><i></i></div>
+            <pre><span class="dim"># Start the server</span>
+<span class="accent">$</span> npm start
+
+<span class="dim"># Check API health</span>
+<span class="accent">$</span> curl http://localhost:3000/health
+{
+  "status": "UP"
+}
+
+<span class="dim"># Known mass outage branch</span>
+<span class="accent">$</span> curl "http://localhost:3000/api/service-problems?serviceId=SERVICE-FTTH-1001&scenario=KNOWN_OUTAGE"</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="shell">
+      <span>Telecom Agent Mock API · Node.js 18+</span>
+      <span><a href="/health">Health endpoint</a> · Detailed contract: <code>API.md</code></span>
+    </footer>
+    <script>
+      const guideContent = document.getElementById("agent-guide-content");
+      const copyGuideButton = document.getElementById("copy-agent-guide");
+      let agentGuide = "";
+
+      fetch("/agent-guide.md")
+        .then((response) => {
+          if (!response.ok) throw new Error("Guide could not be loaded");
+          return response.text();
+        })
+        .then((markdown) => {
+          agentGuide = markdown;
+          guideContent.textContent = markdown;
+          copyGuideButton.disabled = false;
+        })
+        .catch(() => {
+          guideContent.textContent = "The agent guide could not be loaded. Open /agent-guide.md directly.";
+        });
+
+      copyGuideButton.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(agentGuide);
+        } catch {
+          const textarea = document.createElement("textarea");
+          textarea.value = agentGuide;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          textarea.remove();
+        }
+        copyGuideButton.textContent = "Copied!";
+        window.setTimeout(() => {
+          copyGuideButton.textContent = "Copy for your agent";
+        }, 1800);
+      });
+    </script>
+  </body>
+</html>
