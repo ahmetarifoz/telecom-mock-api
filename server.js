@@ -188,6 +188,7 @@ const authTestState = {
   apiKeyCalls: 0,
   events: [],
 };
+const issuedBearerTokens = new Set();
 
 function resetAuthTestState() {
   authTestState.loginCalls = 0;
@@ -195,6 +196,34 @@ function resetAuthTestState() {
   authTestState.protectedCalls = 0;
   authTestState.apiKeyCalls = 0;
   authTestState.events = [];
+  issuedBearerTokens.clear();
+}
+
+function getBearerToken(request) {
+  const authorization = request.headers.authorization || "";
+  return authorization.startsWith("Bearer ")
+    ? authorization.slice("Bearer ".length)
+    : null;
+}
+
+function isKnownBearerToken(token) {
+  return (
+    token === AUTH_FIXTURES.staticBearerToken ||
+    token === AUTH_FIXTURES.callerToken ||
+    issuedBearerTokens.has(token)
+  );
+}
+
+function requireBusinessApiAuth(request, response) {
+  const authorized = isKnownBearerToken(getBearerToken(request));
+  if (authorized) return true;
+
+  response.setHeader("WWW-Authenticate", 'Bearer realm="telecom-mock-api"');
+  sendJson(response, 401, {
+    error: "UNAUTHORIZED",
+    message: "Gecerli bir Bearer token gereklidir",
+  });
+  return false;
 }
 
 function recordAuthEvent(kind, status, details = {}) {
@@ -340,6 +369,7 @@ async function handleRequest(request, response) {
     }
 
     const accessToken = `auth-service-token-${authTestState.loginCalls}`;
+    issuedBearerTokens.add(accessToken);
     recordAuthEvent("AUTH_SERVICE", 200, { scenario });
     sendJson(response, 200, {
       data: {
@@ -369,9 +399,11 @@ async function handleRequest(request, response) {
       return;
     }
 
+    const accessToken = `oauth-access-token-${authTestState.oauthTokenCalls}`;
+    issuedBearerTokens.add(accessToken);
     recordAuthEvent("OAUTH_TOKEN", 200, { clientAuthMethod: "basic" });
     sendJson(response, 200, {
-      access_token: `oauth-access-token-${authTestState.oauthTokenCalls}`,
+      access_token: accessToken,
       token_type: "Bearer",
       expires_in: 300,
       scope: form.get("scope") || "orders.read",
@@ -382,17 +414,10 @@ async function handleRequest(request, response) {
   // Protected downstream for static, caller, managed-service and OAuth tokens.
   if (request.method === "GET" && pathname === "/api/protected/resource") {
     const scenario = searchParams.get("scenario") || "SUCCESS";
-    const authorization = request.headers.authorization || "";
-    const bearerToken = authorization.startsWith("Bearer ")
-      ? authorization.slice("Bearer ".length)
-      : null;
+    const bearerToken = getBearerToken(request);
     authTestState.protectedCalls += 1;
 
-    const knownToken =
-      bearerToken === AUTH_FIXTURES.staticBearerToken ||
-      bearerToken === AUTH_FIXTURES.callerToken ||
-      bearerToken?.startsWith("auth-service-token-") ||
-      bearerToken?.startsWith("oauth-access-token-");
+    const knownToken = isKnownBearerToken(bearerToken);
     const rejectFirstGeneration =
       scenario === "REJECT_FIRST_GENERATION" && bearerToken === "auth-service-token-1";
     const authorized = knownToken && scenario !== "ALWAYS_401" && !rejectFirstGeneration;
@@ -429,6 +454,12 @@ async function handleRequest(request, response) {
         ? { authorized: true, authScheme: "X-API-Key" }
         : { error: "UNAUTHORIZED" },
     );
+    return;
+  }
+
+  // Auth harness routes above keep their endpoint-specific schemes. Every
+  // business API route below requires a valid Bearer token.
+  if (pathname.startsWith("/api/") && !requireBusinessApiAuth(request, response)) {
     return;
   }
 

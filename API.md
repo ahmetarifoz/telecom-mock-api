@@ -3,6 +3,8 @@
 Base URL: `http://localhost:3000`  
 Tum body'ler JSON'dur. Hazir veri: `msisdn=905551112233`, `customerId=CUST-1001`, `billingAccountId=BA-1001`, `subscriptionId=SUB-1001`, `currentOfferId=OFFER-10GB`; hedef teklif: `OFFER-20GB` veya `OFFER-UNLIMITED`.
 
+Tum business endpoint'leri `Authorization: Bearer <token>` header'i ister. Hazir token `static-bearer-token` kullanilabilir veya `POST /api/auth/login` / `POST /api/oauth/token` cevabindan token alinabilir. Eksik, Bearer olmayan veya gecersiz token `401 UNAUTHORIZED` doner. `/`, `/docs`, `/agent-guide.md`, `/health` ve auth test harness endpoint'leri kendi asagida belirtilen erisim kurallariyla calisir.
+
 Akis: musteri ara -> detay/hesap/abonelik al -> uygunluk -> teklifler -> uyumluluk -> validasyon -> siparis olustur -> durumu sorgula.
 
 ## Endpointler

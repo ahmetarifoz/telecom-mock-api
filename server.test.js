@@ -30,6 +30,16 @@ async function requestManagedToken(scenario = "SUCCESS") {
   });
 }
 
+function requestBusinessApi(pathname, options = {}) {
+  return fetch(`${baseUrl}${pathname}`, {
+    ...options,
+    headers: {
+      authorization: "Bearer static-bearer-token",
+      ...options.headers,
+    },
+  });
+}
+
 test("health endpoint", async () => {
   const response = await fetch(`${baseUrl}/health`);
   assert.equal(response.status, 200);
@@ -58,8 +68,46 @@ test("agent guide is served as markdown", async () => {
   assert.match(markdown, /## Auth Test Harness/);
 });
 
-test("customer search returns the fixture", async () => {
+test("business APIs reject missing, malformed and unissued bearer tokens", async () => {
+  for (const headers of [
+    {},
+    { authorization: "Basic dGVzdDp0ZXN0" },
+    { authorization: "Bearer invalid-token" },
+    { authorization: "Bearer auth-service-token-not-issued" },
+  ]) {
+    const response = await fetch(`${baseUrl}/api/customers/search`, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...headers },
+      body: JSON.stringify({ msisdn: "905551112233" }),
+    });
+    assert.equal(response.status, 401);
+    assert.match(response.headers.get("www-authenticate"), /^Bearer/);
+    assert.deepEqual(await response.json(), {
+      error: "UNAUTHORIZED",
+      message: "Gecerli bir Bearer token gereklidir",
+    });
+  }
+});
+
+test("a managed token grants access to business APIs", async () => {
+  await resetAuthHarness();
+  const tokenResponse = await requestManagedToken();
+  const token = (await tokenResponse.json()).data.access_token;
   const response = await fetch(`${baseUrl}/api/customers/search`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ msisdn: "905551112233" }),
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).customers[0].customerId, "CUST-1001");
+});
+
+test("customer search returns the fixture", async () => {
+  const response = await requestBusinessApi("/api/customers/search", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ msisdn: "905551112233" }),
@@ -72,7 +120,7 @@ test("customer search returns the fixture", async () => {
 });
 
 test("validation calculates the price difference", async () => {
-  const response = await fetch(`${baseUrl}/api/orders/validate`, {
+  const response = await requestBusinessApi("/api/orders/validate", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -91,7 +139,7 @@ test("validation calculates the price difference", async () => {
 });
 
 test("missing required field returns 400", async () => {
-  const response = await fetch(`${baseUrl}/api/customers/search`, {
+  const response = await requestBusinessApi("/api/customers/search", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: "{}",
@@ -100,7 +148,7 @@ test("missing required field returns 400", async () => {
 });
 
 test("created order can be queried", async () => {
-  const createResponse = await fetch(`${baseUrl}/api/orders`, {
+  const createResponse = await requestBusinessApi("/api/orders", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -124,7 +172,7 @@ test("created order can be queried", async () => {
   assert.equal(createResponse.status, 201);
   assert.equal(createdOrder.status, "ACKNOWLEDGED");
 
-  const statusResponse = await fetch(`${baseUrl}/api/orders/${createdOrder.orderId}`);
+  const statusResponse = await requestBusinessApi(`/api/orders/${createdOrder.orderId}`);
   const orderStatus = await statusResponse.json();
   assert.equal(statusResponse.status, 200);
   assert.equal(orderStatus.status, "IN_PROGRESS");
@@ -132,9 +180,9 @@ test("created order can be queried", async () => {
 
 test("bill validation correlates usage, products and bill items", async () => {
   const [productsResponse, usageResponse, billsResponse] = await Promise.all([
-    fetch(`${baseUrl}/api/products?customerId=CUST-1001`),
-    fetch(`${baseUrl}/api/usage-records?subscriptionId=SUB-1001&period=2026-07`),
-    fetch(`${baseUrl}/api/customer-bills?billingAccountId=BA-1001`),
+    requestBusinessApi("/api/products?customerId=CUST-1001"),
+    requestBusinessApi("/api/usage-records?subscriptionId=SUB-1001&period=2026-07"),
+    requestBusinessApi("/api/customer-bills?billingAccountId=BA-1001"),
   ]);
   const products = await productsResponse.json();
   const usage = await usageResponse.json();
@@ -144,7 +192,7 @@ test("bill validation correlates usage, products and bill items", async () => {
   assert.equal(usage.usageRecords.length, 2);
   assert.equal(bills.bills[0].amountDue, 1800);
 
-  const validationResponse = await fetch(`${baseUrl}/api/charges/validate`, {
+  const validationResponse = await requestBusinessApi("/api/charges/validate", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ billId: bills.bills[0].billId }),
@@ -160,7 +208,7 @@ test("bill validation correlates usage, products and bill items", async () => {
 });
 
 test("billing dispute ticket can be created and queried", async () => {
-  const createResponse = await fetch(`${baseUrl}/api/trouble-tickets`, {
+  const createResponse = await requestBusinessApi("/api/trouble-tickets", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -177,20 +225,20 @@ test("billing dispute ticket can be created and queried", async () => {
   assert.equal(ticket.status, "OPEN");
   assert.equal(ticket.disputedAmount, 450);
 
-  const getResponse = await fetch(`${baseUrl}/api/trouble-tickets/${ticket.ticketId}`);
+  const getResponse = await requestBusinessApi(`/api/trouble-tickets/${ticket.ticketId}`);
   assert.equal(getResponse.status, 200);
   assert.equal((await getResponse.json()).ticketId, ticket.ticketId);
 });
 
 test("outage diagnosis supports ticket and confirmed appointment", async () => {
-  const servicesResponse = await fetch(`${baseUrl}/api/services?customerId=CUST-1001`);
+  const servicesResponse = await requestBusinessApi("/api/services?customerId=CUST-1001");
   const services = await servicesResponse.json();
   const serviceId = services.services[0].serviceId;
 
-  const problemsResponse = await fetch(`${baseUrl}/api/service-problems?serviceId=${serviceId}`);
+  const problemsResponse = await requestBusinessApi(`/api/service-problems?serviceId=${serviceId}`);
   assert.deepEqual((await problemsResponse.json()).serviceProblems, []);
 
-  const testResponse = await fetch(`${baseUrl}/api/service-tests`, {
+  const testResponse = await requestBusinessApi("/api/service-tests", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ serviceId, testType: "FULL_DIAGNOSTIC" }),
@@ -199,7 +247,7 @@ test("outage diagnosis supports ticket and confirmed appointment", async () => {
   assert.equal(diagnostic.result, "FAILED");
   assert.equal(diagnostic.diagnostics.probableCause, "OPTICAL_SIGNAL_LOSS");
 
-  const ticketResponse = await fetch(`${baseUrl}/api/trouble-tickets`, {
+  const ticketResponse = await requestBusinessApi("/api/trouble-tickets", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -212,7 +260,7 @@ test("outage diagnosis supports ticket and confirmed appointment", async () => {
   });
   const ticket = await ticketResponse.json();
 
-  const appointmentResponse = await fetch(`${baseUrl}/api/appointments`, {
+  const appointmentResponse = await requestBusinessApi("/api/appointments", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -229,8 +277,8 @@ test("outage diagnosis supports ticket and confirmed appointment", async () => {
 });
 
 test("known mass outage tells the agent not to create an individual ticket", async () => {
-  const response = await fetch(
-    `${baseUrl}/api/service-problems?serviceId=SERVICE-FTTH-1001&scenario=KNOWN_OUTAGE`,
+  const response = await requestBusinessApi(
+    "/api/service-problems?serviceId=SERVICE-FTTH-1001&scenario=KNOWN_OUTAGE",
   );
   const data = await response.json();
   assert.equal(data.serviceProblems.length, 1);
@@ -241,7 +289,7 @@ test("known mass outage tells the agent not to create an individual ticket", asy
 });
 
 test("relocation flow offers DSL when fiber is unavailable", async () => {
-  const addressResponse = await fetch(`${baseUrl}/api/geographic-addresses/validate`, {
+  const addressResponse = await requestBusinessApi("/api/geographic-addresses/validate", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -253,7 +301,7 @@ test("relocation flow offers DSL when fiber is unavailable", async () => {
   });
   const address = await addressResponse.json();
 
-  const qualificationResponse = await fetch(`${baseUrl}/api/service-qualifications`, {
+  const qualificationResponse = await requestBusinessApi("/api/service-qualifications", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ addressId: address.addressId, serviceType: "FIXED_INTERNET" }),
@@ -262,13 +310,13 @@ test("relocation flow offers DSL when fiber is unavailable", async () => {
   assert.equal(qualification.qualified, true);
   assert.equal(qualification.technology, "DSL");
 
-  const offersResponse = await fetch(
-    `${baseUrl}/api/relocation-offers?qualificationId=${qualification.qualificationId}`,
+  const offersResponse = await requestBusinessApi(
+    `/api/relocation-offers?qualificationId=${qualification.qualificationId}`,
   );
   const relocationOffers = await offersResponse.json();
   assert.equal(relocationOffers.offers[0].offerId, "HOME-DSL-35");
 
-  const quoteResponse = await fetch(`${baseUrl}/api/quotes`, {
+  const quoteResponse = await requestBusinessApi("/api/quotes", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -279,7 +327,7 @@ test("relocation flow offers DSL when fiber is unavailable", async () => {
   });
   const quote = await quoteResponse.json();
 
-  const unconfirmedResponse = await fetch(`${baseUrl}/api/relocation-orders`, {
+  const unconfirmedResponse = await requestBusinessApi("/api/relocation-orders", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -292,7 +340,7 @@ test("relocation flow offers DSL when fiber is unavailable", async () => {
   });
   assert.equal(unconfirmedResponse.status, 409);
 
-  const confirmedResponse = await fetch(`${baseUrl}/api/relocation-orders`, {
+  const confirmedResponse = await requestBusinessApi("/api/relocation-orders", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -309,7 +357,7 @@ test("relocation flow offers DSL when fiber is unavailable", async () => {
 });
 
 test("relocation does not return offers where no fixed service exists", async () => {
-  const addressResponse = await fetch(`${baseUrl}/api/geographic-addresses/validate`, {
+  const addressResponse = await requestBusinessApi("/api/geographic-addresses/validate", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -320,7 +368,7 @@ test("relocation does not return offers where no fixed service exists", async ()
     }),
   });
   const address = await addressResponse.json();
-  const qualificationResponse = await fetch(`${baseUrl}/api/service-qualifications`, {
+  const qualificationResponse = await requestBusinessApi("/api/service-qualifications", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ addressId: address.addressId, serviceType: "FIXED_INTERNET" }),
@@ -328,8 +376,8 @@ test("relocation does not return offers where no fixed service exists", async ()
   const qualification = await qualificationResponse.json();
   assert.equal(qualification.qualified, false);
 
-  const offersResponse = await fetch(
-    `${baseUrl}/api/relocation-offers?qualificationId=${qualification.qualificationId}`,
+  const offersResponse = await requestBusinessApi(
+    `/api/relocation-offers?qualificationId=${qualification.qualificationId}`,
   );
   assert.deepEqual((await offersResponse.json()).offers, []);
 });

@@ -108,18 +108,23 @@ Tasima uygunluk fixture'lari postal code ile secilir:
 
 ## Hizli deneme
 
+Tum business API'leri `Authorization: Bearer <token>` ister. Hizli testler icin hazir `static-bearer-token` kullanilabilir:
+
 ```bash
 curl -X POST http://localhost:3000/api/customers/search \
+  -H 'Authorization: Bearer static-bearer-token' \
   -H 'Content-Type: application/json' \
   -d '{"msisdn":"905551112233"}'
 ```
 
 ```bash
-curl http://localhost:3000/api/customers/CUST-1001
+curl http://localhost:3000/api/customers/CUST-1001 \
+  -H 'Authorization: Bearer static-bearer-token'
 ```
 
 ```bash
 curl -X POST http://localhost:3000/api/change-plan/eligibility \
+  -H 'Authorization: Bearer static-bearer-token' \
   -H 'Content-Type: application/json' \
   -d '{
     "customerId":"CUST-1001",
