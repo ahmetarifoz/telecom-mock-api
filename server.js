@@ -20,7 +20,7 @@ const billingAccount = {
   billingAccountId: "BA-1001",
   customerId: customer.customerId,
   status: "ACTIVE",
-  currency: "TRY",
+  currency: "USD",
   outstandingBalance: 149.9,
   creditClass: "A",
 };
@@ -40,7 +40,7 @@ const offers = [
     offerId: "OFFER-10GB",
     name: "Advantage 10 GB",
     monthlyPrice: 350,
-    currency: "TRY",
+    currency: "USD",
     internetQuotaGb: 10,
     voiceMinutes: 1000,
     smsCount: 250,
@@ -50,7 +50,7 @@ const offers = [
     offerId: "OFFER-20GB",
     name: "Advantage 20 GB",
     monthlyPrice: 450,
-    currency: "TRY",
+    currency: "USD",
     internetQuotaGb: 20,
     voiceMinutes: 2000,
     smsCount: 500,
@@ -60,7 +60,7 @@ const offers = [
     offerId: "OFFER-UNLIMITED",
     name: "Unlimited Plus",
     monthlyPrice: 700,
-    currency: "TRY",
+    currency: "USD",
     internetQuotaGb: null,
     voiceMinutes: null,
     smsCount: null,
@@ -95,7 +95,7 @@ const activeProducts = [
     status: "ACTIVE",
     activationDate: "2026-01-01T00:00:00.000Z",
     monthlyDiscount: 100,
-    currency: "TRY",
+    currency: "USD",
   },
 ];
 
@@ -110,7 +110,7 @@ const usageRecords = [
     unit: "GB",
     rated: true,
     ratedAmount: 400,
-    currency: "TRY",
+    currency: "USD",
   },
   {
     usageId: "USG-ROAMING-1001",
@@ -123,7 +123,7 @@ const usageRecords = [
     country: "DE",
     rated: true,
     ratedAmount: 450,
-    currency: "TRY",
+    currency: "USD",
   },
 ];
 
@@ -135,7 +135,7 @@ const customerBill = {
   dueDate: "2026-08-15",
   state: "ISSUED",
   amountDue: 1800,
-  currency: "TRY",
+  currency: "USD",
   billItems: [
     { id: "BI-1", type: "RECURRING", description: "Advantage 10 GB", amount: 350 },
     { id: "BI-2", type: "USAGE", description: "10 GB quota overage", amount: 400, usageId: "USG-DATA-1001" },
@@ -567,7 +567,7 @@ async function handleRequest(request, response) {
       billId: customerBill.billId,
       valid: false,
       recommendedDisputeAmount: 450,
-      currency: "TRY",
+      currency: "USD",
       checks: [
         {
           code: "ROAMING_PACKAGE_AT_USAGE_TIME",
@@ -772,8 +772,8 @@ async function handleRequest(request, response) {
     }
     const relocationOffers = qualification.qualified
       ? qualification.technology === "FTTH"
-        ? [{ offerId: "HOME-FIBER-100", name: "Fiber 100 Mbps", monthlyPrice: 600, installationFee: 250, currency: "TRY" }]
-        : [{ offerId: "HOME-DSL-35", name: "DSL 35 Mbps", monthlyPrice: 450, installationFee: 200, currency: "TRY" }]
+        ? [{ offerId: "HOME-FIBER-100", name: "Fiber 100 Mbps", monthlyPrice: 600, installationFee: 250, currency: "USD" }]
+        : [{ offerId: "HOME-DSL-35", name: "DSL 35 Mbps", monthlyPrice: 450, installationFee: 200, currency: "USD" }]
       : [];
     sendJson(response, 200, { qualificationId, offers: relocationOffers });
     return;
@@ -798,7 +798,7 @@ async function handleRequest(request, response) {
       status: "APPROVED",
       monthlyPrice: qualification.technology === "FTTH" ? 600 : 450,
       installationFee: qualification.technology === "FTTH" ? 250 : 200,
-      currency: "TRY",
+      currency: "USD",
       validForSeconds: 900,
       createdAt: new Date().toISOString(),
     };
@@ -915,7 +915,7 @@ async function handleRequest(request, response) {
       compatible,
       targetOfferId: body.targetOfferId,
       oneTimeCharges: compatible
-        ? [{ type: "ACTIVATION_FEE", amount: 50, currency: "TRY" }]
+        ? [{ type: "ACTIVATION_FEE", amount: 50, currency: "USD" }]
         : [],
       removedProducts: [],
       requiredActions: compatible ? ["ACCEPT_NEW_COMMITMENT"] : [],
@@ -947,7 +947,7 @@ async function handleRequest(request, response) {
         currentMonthlyPrice: currentPrice,
         newMonthlyPrice: newPrice,
         priceDifference: newPrice - currentPrice,
-        currency: "TRY",
+        currency: "USD",
       },
       effectiveDate: new Date().toISOString().slice(0, 10),
       errors: valid ? [] : [{ code: "INVALID_OFFER", message: "The offer or action is invalid." }],

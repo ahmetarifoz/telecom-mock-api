@@ -71,7 +71,7 @@ If `customers` is empty, stop. Use `customerId` to get the account, then use `bi
       "billingAccountId": "BA-1001",
       "customerId": "CUST-1001",
       "status": "ACTIVE",
-      "currency": "TRY",
+      "currency": "USD",
       "outstandingBalance": 149.9,
       "creditClass": "A"
     }
@@ -136,7 +136,7 @@ After the user selects a target offer, check compatibility:
 {
   "compatible": true,
   "targetOfferId": "OFFER-20GB",
-  "oneTimeCharges": [{"type": "ACTIVATION_FEE", "amount": 50, "currency": "TRY"}],
+  "oneTimeCharges": [{"type": "ACTIVATION_FEE", "amount": 50, "currency": "USD"}],
   "removedProducts": [],
   "requiredActions": ["ACCEPT_NEW_COMMITMENT"]
 }
@@ -164,7 +164,7 @@ Stop when `compatible=false`. Show one-time charges and required actions before 
     "currentMonthlyPrice": 350,
     "newMonthlyPrice": 450,
     "priceDifference": 100,
-    "currency": "TRY"
+    "currency": "USD"
   },
   "effectiveDate": "2026-08-06",
   "errors": [],
@@ -216,7 +216,7 @@ POST /api/charges/validate {billId:"BILL-2026-07-1001"}        → valid,checks[
 POST /api/trouble-tickets  {customerId,type:"BILLING_DISPUTE",description,billId,disputedAmount,evidence} → ticketId,status
 ```
 
-Fixture conclusion: bill items total TRY 1,800; discount and overage are valid; `USG-ROAMING-1001` is charged twice (`BI-4`,`BI-5`). Dispute TRY 450.
+Fixture conclusion: bill items total $1,800; discount and overage are valid; `USG-ROAMING-1001` is charged twice (`BI-4`,`BI-5`). Dispute $450.
 
 ### Bill dispute request/response details
 
@@ -247,7 +247,7 @@ Use the IDs found during customer/account lookup. Inventory and usage responses 
       "unit": "GB",
       "rated": true,
       "ratedAmount": 450,
-      "currency": "TRY"
+      "currency": "USD"
     }
   ]
 }
@@ -264,7 +264,7 @@ Use the IDs found during customer/account lookup. Inventory and usage responses 
   "billId": "BILL-2026-07-1001",
   "valid": false,
   "recommendedDisputeAmount": 450,
-  "currency": "TRY",
+  "currency": "USD",
   "checks": [
     {
       "code": "DUPLICATE_USAGE_CHARGE",
@@ -477,7 +477,7 @@ If `qualified=false`, report `reason` and stop. Otherwise query offers with `qua
   "status": "APPROVED",
   "monthlyPrice": 600,
   "installationFee": 250,
-  "currency": "TRY",
+  "currency": "USD",
   "validForSeconds": 900,
   "createdAt": "2026-08-06T10:00:00.000Z"
 }

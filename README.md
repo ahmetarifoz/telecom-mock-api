@@ -7,7 +7,7 @@ Telekom agent'larinin yalnizca API cagirmasini degil; musteri, urun, kullanim, f
 | Senaryo | Ornek musteri talebi | Test edilen yetenek | TM Forum |
 | --- | --- | --- | --- |
 | Plan degisikligi | "Paketimi 20 GB'a yukselt." | Eligibility, fiyat farki ve siparis | TMF629, TMF637, TMF622 |
-| Fatura itirazi | "Faturam neden 1.800 TL geldi? Hataliysa itiraz olustur." | Coklu veri korelasyonu ve gerekce | TMF637, TMF635, TMF678, TMF621 |
+| Fatura itirazi | "Faturam neden 1.800 USD geldi? Hataliysa itiraz olustur." | Coklu veri korelasyonu ve gerekce | TMF637, TMF635, TMF678, TMF621 |
 | Internet arizasi | "Internetim iki saattir calismiyor." | Teshis ve dogru ticket karari | TMF638, TMF656, TMF621, TMF646 |
 | Ev interneti tasima | "Internetimi yeni adresime tasimak istiyorum." | Uzun multi-API orchestration | TMF673, TMF645, TMF648, TMF622, TMF646 |
 
@@ -56,7 +56,7 @@ Sayfa harici font, CDN veya frontend kutuphanesi kullanmaz; dogrudan mock server
 | Subscription ID | `SUB-1001` |
 | Mevcut Offer ID | `OFFER-10GB` |
 | Hedef Offer ID | `OFFER-20GB` veya `OFFER-UNLIMITED` |
-| Temmuz faturasi | `BILL-2026-07-1001` / 1.800 TRY |
+| Temmuz faturasi | `BILL-2026-07-1001` / 1.800 USD |
 | Ev interneti servisi | `SERVICE-FTTH-1001` |
 
 Tasima uygunluk fixture'lari postal code ile secilir:
@@ -139,7 +139,7 @@ Product Order endpoint'i siparisi once `ACKNOWLEDGED` olarak olusturur. Donen `o
 
 ## Senaryo notlari
 
-Fatura fixture'inda toplam 1.800 TRY ve kalem toplami birbiriyle uyumludur; sadakat indirimi uygulanmis, 10 GB kota 4 GB asilmis ve roaming paketi kullanimdan sonra aktive edilmistir. Asil hata, `USG-ROAMING-1001` kullaniminin `BI-4` ve `BI-5` kalemlerinde iki kez ucretlendirilmesidir. Onerilen itiraz tutari 450 TRY'dir.
+Fatura fixture'inda toplam 1.800 USD ve kalem toplami birbiriyle uyumludur; sadakat indirimi uygulanmis, 10 GB kota 4 GB asilmis ve roaming paketi kullanimdan sonra aktive edilmistir. Asil hata, `USG-ROAMING-1001` kullaniminin `BI-4` ve `BI-5` kalemlerinde iki kez ucretlendirilmesidir. Onerilen itiraz tutari 450 USD'dir.
 
 Internet arizasi fixture'inda varsayilan olarak genel kesinti yoktur ve uzaktan test `OPTICAL_SIGNAL_LOSS` ile basarisiz olur. Genel kesinti dalini test etmek icin `GET /api/service-problems?serviceId=SERVICE-FTTH-1001&scenario=KNOWN_OUTAGE` kullanilir; cevap ayri ticket olusturulmamasi gerektigini belirtir.
 

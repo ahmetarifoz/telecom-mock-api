@@ -70,7 +70,7 @@ Akis: aktif urunleri al -> rated kullanimlari al -> faturayi al -> kalemleri dog
 
 ### `GET /api/products?customerId=CUST-1001`
 
-TMF637 karsiligi. Response `200`: `products[]`. Fixture; 10 GB tarife, 15 Temmuz'da aktive edilen roaming paketi ve aylik 100 TRY sadakat indirimi icerir.
+TMF637 karsiligi. Response `200`: `products[]`. Fixture; 10 GB tarife, 15 Temmuz'da aktive edilen roaming paketi ve aylik 100 USD sadakat indirimi icerir.
 
 ### `GET /api/usage-records?subscriptionId=SUB-1001&period=2026-07`
 
@@ -80,7 +80,7 @@ TMF635 karsiligi. Response `200`: `usageRecords[] -> usageId, usageType, startDa
 
 ### `GET /api/customer-bills/BILL-2026-07-1001`
 
-TMF678 karsiligi. Response fatura alanlari: `billId, billingAccountId, billingPeriod, issueDate, dueDate, state, amountDue, currency, billItems[]`. Fatura 1.800 TRY'dir. Ayni `USG-ROAMING-1001` referansi `BI-4` ve `BI-5` uzerinden iki kez ucretlendirilmistir.
+TMF678 karsiligi. Response fatura alanlari: `billId, billingAccountId, billingPeriod, issueDate, dueDate, state, amountDue, currency, billItems[]`. Fatura 1.800 USD'dir. Ayni `USG-ROAMING-1001` referansi `BI-4` ve `BI-5` uzerinden iki kez ucretlendirilmistir.
 
 ### `POST /api/charges/validate`
 
