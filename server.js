@@ -38,7 +38,7 @@ const subscription = {
 const offers = [
   {
     offerId: "OFFER-10GB",
-    name: "Avantaj 10 GB",
+    name: "Advantage 10 GB",
     monthlyPrice: 350,
     currency: "TRY",
     internetQuotaGb: 10,
@@ -48,7 +48,7 @@ const offers = [
   },
   {
     offerId: "OFFER-20GB",
-    name: "Avantaj 20 GB",
+    name: "Advantage 20 GB",
     monthlyPrice: 450,
     currency: "TRY",
     internetQuotaGb: 20,
@@ -58,7 +58,7 @@ const offers = [
   },
   {
     offerId: "OFFER-UNLIMITED",
-    name: "Sinirsiz Plus",
+    name: "Unlimited Plus",
     monthlyPrice: 700,
     currency: "TRY",
     internetQuotaGb: null,
@@ -73,7 +73,7 @@ const activeProducts = [
     productId: subscription.subscriptionId,
     productType: "MOBILE_TARIFF",
     offerId: subscription.currentOfferId,
-    name: "Avantaj 10 GB",
+    name: "Advantage 10 GB",
     status: "ACTIVE",
     activationDate: "2026-01-01T00:00:00.000Z",
     internetQuotaGb: 10,
@@ -82,7 +82,7 @@ const activeProducts = [
     productId: "PROD-ROAMING-1001",
     productType: "ROAMING_PACKAGE",
     offerId: "OFFER-ROAMING-1GB",
-    name: "Yurt Disi 1 GB",
+    name: "International 1 GB",
     status: "ACTIVE",
     activationDate: "2026-07-15T09:00:00.000Z",
     internetQuotaGb: 1,
@@ -91,7 +91,7 @@ const activeProducts = [
     productId: "PROD-DISCOUNT-1001",
     productType: "DISCOUNT",
     offerId: "OFFER-LOYALTY-100",
-    name: "Sadakat Indirimi",
+    name: "Loyalty Discount",
     status: "ACTIVE",
     activationDate: "2026-01-01T00:00:00.000Z",
     monthlyDiscount: 100,
@@ -137,12 +137,12 @@ const customerBill = {
   amountDue: 1800,
   currency: "TRY",
   billItems: [
-    { id: "BI-1", type: "RECURRING", description: "Avantaj 10 GB", amount: 350 },
-    { id: "BI-2", type: "USAGE", description: "10 GB kota asimi", amount: 400, usageId: "USG-DATA-1001" },
-    { id: "BI-3", type: "ONE_TIME", description: "Yurt Disi 1 GB paketi", amount: 250, productId: "PROD-ROAMING-1001" },
-    { id: "BI-4", type: "USAGE", description: "Yurt disi internet kullanimi", amount: 450, usageId: "USG-ROAMING-1001" },
-    { id: "BI-5", type: "USAGE", description: "Yurt disi internet kullanimi", amount: 450, usageId: "USG-ROAMING-1001" },
-    { id: "BI-6", type: "DISCOUNT", description: "Sadakat indirimi", amount: -100, productId: "PROD-DISCOUNT-1001" },
+    { id: "BI-1", type: "RECURRING", description: "Advantage 10 GB", amount: 350 },
+    { id: "BI-2", type: "USAGE", description: "10 GB quota overage", amount: 400, usageId: "USG-DATA-1001" },
+    { id: "BI-3", type: "ONE_TIME", description: "International 1 GB package", amount: 250, productId: "PROD-ROAMING-1001" },
+    { id: "BI-4", type: "USAGE", description: "International data usage", amount: 450, usageId: "USG-ROAMING-1001" },
+    { id: "BI-5", type: "USAGE", description: "International data usage", amount: 450, usageId: "USG-ROAMING-1001" },
+    { id: "BI-6", type: "DISCOUNT", description: "Loyalty discount", amount: -100, productId: "PROD-DISCOUNT-1001" },
   ],
 };
 
@@ -150,7 +150,7 @@ const internetService = {
   serviceId: "SERVICE-FTTH-1001",
   customerId: customer.customerId,
   subscriptionId: "SUB-HOME-1001",
-  name: "Evde Fiber 100 Mbps",
+  name: "Home Fiber 100 Mbps",
   serviceType: "FIXED_INTERNET",
   technology: "FTTH",
   status: "ACTIVE",
@@ -221,7 +221,7 @@ function requireBusinessApiAuth(request, response) {
   response.setHeader("WWW-Authenticate", 'Bearer realm="telecom-mock-api"');
   sendJson(response, 401, {
     error: "UNAUTHORIZED",
-    message: "Gecerli bir Bearer token gereklidir",
+    message: "A valid Bearer token is required",
   });
   return false;
 }
@@ -270,7 +270,7 @@ async function readJson(request) {
   try {
     return JSON.parse(bodyText);
   } catch {
-    const error = new Error("Gecersiz JSON body");
+    const error = new Error("Invalid JSON body");
     error.statusCode = 400;
     throw error;
   }
@@ -287,7 +287,7 @@ function requireFields(body, fields) {
     (field) => body[field] === undefined || body[field] === null || body[field] === "",
   );
   if (missingFields.length > 0) {
-    const error = new Error(`Zorunlu alanlar eksik: ${missingFields.join(", ")}`);
+    const error = new Error(`Missing required fields: ${missingFields.join(", ")}`);
     error.statusCode = 400;
     throw error;
   }
@@ -477,7 +477,7 @@ async function handleRequest(request, response) {
   const customerMatch = routeMatches(pathname, /^\/api\/customers\/([^/]+)$/);
   if (request.method === "GET" && customerMatch) {
     if (customerMatch[0] !== customer.customerId) {
-      sendJson(response, 404, { error: "CUSTOMER_NOT_FOUND", message: "Musteri bulunamadi" });
+      sendJson(response, 404, { error: "CUSTOMER_NOT_FOUND", message: "Customer not found" });
       return;
     }
     sendJson(response, 200, {
@@ -548,7 +548,7 @@ async function handleRequest(request, response) {
   const billMatch = routeMatches(pathname, /^\/api\/customer-bills\/([^/]+)$/);
   if (request.method === "GET" && billMatch) {
     if (billMatch[0] !== customerBill.billId) {
-      sendJson(response, 404, { error: "BILL_NOT_FOUND", message: "Fatura bulunamadi" });
+      sendJson(response, 404, { error: "BILL_NOT_FOUND", message: "Bill not found" });
       return;
     }
     sendJson(response, 200, customerBill);
@@ -560,7 +560,7 @@ async function handleRequest(request, response) {
     const body = await readJson(request);
     requireFields(body, ["billId"]);
     if (body.billId !== customerBill.billId) {
-      sendJson(response, 404, { error: "BILL_NOT_FOUND", message: "Fatura bulunamadi" });
+      sendJson(response, 404, { error: "BILL_NOT_FOUND", message: "Bill not found" });
       return;
     }
     sendJson(response, 200, {
@@ -577,7 +577,7 @@ async function handleRequest(request, response) {
             usageDate: "2026-07-10T12:30:00.000Z",
             packageActivationDate: "2026-07-15T09:00:00.000Z",
           },
-          message: "Roaming paketi kullanimdan sonra aktif oldugu icin ilk kullanim paket kapsaminda degildir.",
+          message: "The roaming package was activated after the usage, so the initial usage is not covered by the package.",
         },
         {
           code: "DUPLICATE_USAGE_CHARGE",
@@ -586,25 +586,25 @@ async function handleRequest(request, response) {
           affectedBillItemIds: ["BI-4", "BI-5"],
           usageId: "USG-ROAMING-1001",
           duplicateAmount: 450,
-          message: "Ayni roaming kullanimi iki kez ucretlendirilmistir.",
+          message: "The same roaming usage was charged twice.",
         },
         {
           code: "PACKAGE_QUOTA_EXCEEDED",
           passed: true,
           evidence: { quotaGb: 10, usedGb: 14, excessGb: 4 },
-          message: "Internet paket kotasi 4 GB asilmistir.",
+          message: "The data package quota was exceeded by 4 GB.",
         },
         {
           code: "DISCOUNT_APPLIED",
           passed: true,
           evidence: { expectedAmount: -100, billedAmount: -100 },
-          message: "Sadakat indirimi faturaya uygulanmistir.",
+          message: "The loyalty discount was applied to the bill.",
         },
         {
           code: "BILL_TOTAL_MATCHES_ITEMS",
           passed: true,
           evidence: { itemTotal: 1800, billTotal: 1800 },
-          message: "Fatura toplami kalemlerin toplamiyla eslesmektedir.",
+          message: "The bill total matches the sum of its items.",
         },
       ],
     });
@@ -647,7 +647,7 @@ async function handleRequest(request, response) {
     const body = await readJson(request);
     requireFields(body, ["serviceId", "testType"]);
     if (body.serviceId !== internetService.serviceId) {
-      sendJson(response, 404, { error: "SERVICE_NOT_FOUND", message: "Servis bulunamadi" });
+      sendJson(response, 404, { error: "SERVICE_NOT_FOUND", message: "Service not found" });
       return;
     }
     sendJson(response, 200, {
@@ -672,19 +672,19 @@ async function handleRequest(request, response) {
     const body = await readJson(request);
     requireFields(body, ["customerId", "type", "description"]);
     if (body.customerId !== customer.customerId) {
-      sendJson(response, 404, { error: "CUSTOMER_NOT_FOUND", message: "Musteri bulunamadi" });
+      sendJson(response, 404, { error: "CUSTOMER_NOT_FOUND", message: "Customer not found" });
       return;
     }
     if (!['BILLING_DISPUTE', 'SERVICE_INCIDENT'].includes(body.type)) {
-      sendJson(response, 400, { error: "INVALID_TICKET_TYPE", message: "Ticket tipi gecersiz" });
+      sendJson(response, 400, { error: "INVALID_TICKET_TYPE", message: "Invalid ticket type" });
       return;
     }
     if (body.type === "BILLING_DISPUTE" && !body.billId) {
-      sendJson(response, 400, { error: "BILL_ID_REQUIRED", message: "Fatura itirazi icin billId zorunludur" });
+      sendJson(response, 400, { error: "BILL_ID_REQUIRED", message: "billId is required for a billing dispute" });
       return;
     }
     if (body.type === "SERVICE_INCIDENT" && !body.serviceId) {
-      sendJson(response, 400, { error: "SERVICE_ID_REQUIRED", message: "Ariza icin serviceId zorunludur" });
+      sendJson(response, 400, { error: "SERVICE_ID_REQUIRED", message: "serviceId is required for a service incident" });
       return;
     }
     const ticketId = `TT-${randomUUID().slice(0, 8)}`;
@@ -709,7 +709,7 @@ async function handleRequest(request, response) {
   if (request.method === "GET" && ticketMatch) {
     const ticket = tickets.get(ticketMatch[0]);
     if (!ticket) {
-      sendJson(response, 404, { error: "TICKET_NOT_FOUND", message: "Ticket bulunamadi" });
+      sendJson(response, 404, { error: "TICKET_NOT_FOUND", message: "Ticket not found" });
       return;
     }
     sendJson(response, 200, ticket);
@@ -742,7 +742,7 @@ async function handleRequest(request, response) {
     requireFields(body, ["addressId", "serviceType"]);
     const address = addresses.get(body.addressId);
     if (!address) {
-      sendJson(response, 404, { error: "ADDRESS_NOT_FOUND", message: "Adres bulunamadi" });
+      sendJson(response, 404, { error: "ADDRESS_NOT_FOUND", message: "Address not found" });
       return;
     }
     const postalCode = address.normalizedAddress.postalCode;
@@ -767,7 +767,7 @@ async function handleRequest(request, response) {
     const qualificationId = searchParams.get("qualificationId");
     const qualification = qualifications.get(qualificationId);
     if (!qualification) {
-      sendJson(response, 404, { error: "QUALIFICATION_NOT_FOUND", message: "Uygunluk sonucu bulunamadi" });
+      sendJson(response, 404, { error: "QUALIFICATION_NOT_FOUND", message: "Qualification result not found" });
       return;
     }
     const relocationOffers = qualification.qualified
@@ -786,7 +786,7 @@ async function handleRequest(request, response) {
     const qualification = qualifications.get(body.qualificationId);
     const allowedOfferId = qualification?.technology === "FTTH" ? "HOME-FIBER-100" : "HOME-DSL-35";
     if (!qualification?.qualified || body.offerId !== allowedOfferId) {
-      sendJson(response, 409, { error: "OFFER_NOT_QUALIFIED", message: "Teklif bu adres icin uygun degildir" });
+      sendJson(response, 409, { error: "OFFER_NOT_QUALIFIED", message: "The offer is not available at this address" });
       return;
     }
     const quoteId = `QUOTE-${randomUUID().slice(0, 8)}`;
@@ -813,11 +813,11 @@ async function handleRequest(request, response) {
     requireFields(body, ["externalReferenceId", "customerId", "subscriptionId", "quoteId", "userConfirmed"]);
     const quote = quotes.get(body.quoteId);
     if (!quote || quote.customerId !== body.customerId) {
-      sendJson(response, 404, { error: "QUOTE_NOT_FOUND", message: "Teklif bulunamadi" });
+      sendJson(response, 404, { error: "QUOTE_NOT_FOUND", message: "Quote not found" });
       return;
     }
     if (body.userConfirmed !== true) {
-      sendJson(response, 409, { error: "USER_CONFIRMATION_REQUIRED", message: "Siparis icin kullanici onayi gereklidir" });
+      sendJson(response, 409, { error: "USER_CONFIRMATION_REQUIRED", message: "User confirmation is required to create the order" });
       return;
     }
     const orderId = `RELOC-${randomUUID().slice(0, 8)}`;
@@ -853,11 +853,11 @@ async function handleRequest(request, response) {
       tickets.has(body.relatedEntityId) ||
       relocationOrders.has(body.relatedEntityId);
     if (!slot || !relatedEntityExists) {
-      sendJson(response, 409, { error: "APPOINTMENT_NOT_AVAILABLE", message: "Randevu olusturulamadi" });
+      sendJson(response, 409, { error: "APPOINTMENT_NOT_AVAILABLE", message: "The appointment could not be booked" });
       return;
     }
     if (body.userConfirmed !== true) {
-      sendJson(response, 409, { error: "USER_CONFIRMATION_REQUIRED", message: "Randevu icin kullanici onayi gereklidir" });
+      sendJson(response, 409, { error: "USER_CONFIRMATION_REQUIRED", message: "User confirmation is required to book the appointment" });
       return;
     }
     const appointmentId = `APT-${randomUUID().slice(0, 8)}`;
@@ -891,11 +891,11 @@ async function handleRequest(request, response) {
       eligibilityId: eligible ? `ELG-${randomUUID().slice(0, 8)}` : "",
       eligibleOfferIds: eligible ? ["OFFER-20GB", "OFFER-UNLIMITED"] : [],
       warnings: eligible
-        ? [{ code: "COMMITMENT_RENEWED", message: "Yeni taahhut donemi baslayacaktir." }]
+        ? [{ code: "COMMITMENT_RENEWED", message: "A new commitment period will begin." }]
         : [],
       blockingReasons: eligible
         ? []
-        : [{ code: "CUSTOMER_NOT_FOUND", message: "Musteri uygunluk kontrolunden gecemedi." }],
+        : [{ code: "CUSTOMER_NOT_FOUND", message: "The customer did not pass the eligibility check." }],
     });
     return;
   }
@@ -950,9 +950,9 @@ async function handleRequest(request, response) {
         currency: "TRY",
       },
       effectiveDate: new Date().toISOString().slice(0, 10),
-      errors: valid ? [] : [{ code: "INVALID_OFFER", message: "Teklif veya aksiyon gecersiz." }],
+      errors: valid ? [] : [{ code: "INVALID_OFFER", message: "The offer or action is invalid." }],
       warnings: valid
-        ? [{ code: "PRICE_CHANGE", message: "Aylik ucret degisecektir." }]
+        ? [{ code: "PRICE_CHANGE", message: "The monthly price will change." }]
         : [],
     });
     return;
@@ -971,7 +971,7 @@ async function handleRequest(request, response) {
       "orderItems",
     ]);
     if (!Array.isArray(body.orderItems) || body.orderItems.length === 0) {
-      sendJson(response, 400, { error: "INVALID_ORDER_ITEMS", message: "orderItems bos olamaz" });
+      sendJson(response, 400, { error: "INVALID_ORDER_ITEMS", message: "orderItems must not be empty" });
       return;
     }
     const orderId = `ORD-${randomUUID().slice(0, 8)}`;
@@ -993,7 +993,7 @@ async function handleRequest(request, response) {
     const orderId = orderMatch[0];
     const order = orders.get(orderId);
     if (!order) {
-      sendJson(response, 404, { error: "ORDER_NOT_FOUND", message: "Siparis bulunamadi" });
+      sendJson(response, 404, { error: "ORDER_NOT_FOUND", message: "Order not found" });
       return;
     }
     const completed = Date.now() - order.createdAt.getTime() >= 3000;
@@ -1010,7 +1010,7 @@ async function handleRequest(request, response) {
     return;
   }
 
-  sendJson(response, 404, { error: "NOT_FOUND", message: "Endpoint bulunamadi" });
+  sendJson(response, 404, { error: "NOT_FOUND", message: "Endpoint not found" });
 }
 
 function createServer() {

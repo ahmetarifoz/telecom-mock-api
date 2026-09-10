@@ -84,7 +84,7 @@ test("business APIs reject missing, malformed and unissued bearer tokens", async
     assert.match(response.headers.get("www-authenticate"), /^Bearer/);
     assert.deepEqual(await response.json(), {
       error: "UNAUTHORIZED",
-      message: "Gecerli bir Bearer token gereklidir",
+      message: "A valid Bearer token is required",
     });
   }
 });
@@ -189,8 +189,10 @@ test("bill validation correlates usage, products and bill items", async () => {
   const bills = await billsResponse.json();
 
   assert.equal(products.products.length, 3);
+  assert.equal(products.products[1].name, "International 1 GB");
   assert.equal(usage.usageRecords.length, 2);
   assert.equal(bills.bills[0].amountDue, 1800);
+  assert.equal(bills.bills[0].billItems[3].description, "International data usage");
 
   const validationResponse = await requestBusinessApi("/api/charges/validate", {
     method: "POST",
@@ -205,6 +207,7 @@ test("bill validation correlates usage, products and bill items", async () => {
   assert.equal(validation.valid, false);
   assert.equal(validation.recommendedDisputeAmount, 450);
   assert.deepEqual(duplicateCheck.affectedBillItemIds, ["BI-4", "BI-5"]);
+  assert.equal(duplicateCheck.message, "The same roaming usage was charged twice.");
 });
 
 test("billing dispute ticket can be created and queried", async () => {
@@ -214,7 +217,7 @@ test("billing dispute ticket can be created and queried", async () => {
     body: JSON.stringify({
       customerId: "CUST-1001",
       type: "BILLING_DISPUTE",
-      description: "Roaming kullanimi iki kez ucretlendirilmis.",
+      description: "The same roaming usage was charged twice.",
       billId: "BILL-2026-07-1001",
       disputedAmount: 450,
       evidence: ["BI-4", "BI-5", "USG-ROAMING-1001"],
@@ -253,7 +256,7 @@ test("outage diagnosis supports ticket and confirmed appointment", async () => {
     body: JSON.stringify({
       customerId: "CUST-1001",
       type: "SERVICE_INCIDENT",
-      description: "Genel kesinti yok, uzaktan test basarisiz.",
+      description: "No mass outage exists and the remote test failed.",
       serviceId,
       evidence: [diagnostic.testId],
     }),

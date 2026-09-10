@@ -98,7 +98,7 @@ Fatura itirazi request ornegi:
 {
   "customerId": "CUST-1001",
   "type": "BILLING_DISPUTE",
-  "description": "Roaming kullanimi iki kez ucretlendirilmis.",
+  "description": "The same roaming usage was charged twice.",
   "billId": "BILL-2026-07-1001",
   "disputedAmount": 450,
   "evidence": ["BI-4", "BI-5", "USG-ROAMING-1001"]

@@ -113,7 +113,7 @@ Run eligibility before presenting target offers:
   "eligibilityId": "ELG-...",
   "eligibleOfferIds": ["OFFER-20GB", "OFFER-UNLIMITED"],
   "warnings": [
-    {"code": "COMMITMENT_RENEWED", "message": "Yeni taahhut donemi baslayacaktir."}
+    {"code": "COMMITMENT_RENEWED", "message": "A new commitment period will begin."}
   ],
   "blockingReasons": []
 }
@@ -168,7 +168,7 @@ Stop when `compatible=false`. Show one-time charges and required actions before 
   },
   "effectiveDate": "2026-08-06",
   "errors": [],
-  "warnings": [{"code": "PRICE_CHANGE", "message": "Aylik ucret degisecektir."}]
+  "warnings": [{"code": "PRICE_CHANGE", "message": "The monthly price will change."}]
 }
 ```
 
@@ -273,7 +273,7 @@ Use the IDs found during customer/account lookup. Inventory and usage responses 
       "affectedBillItemIds": ["BI-4", "BI-5"],
       "usageId": "USG-ROAMING-1001",
       "duplicateAmount": 450,
-      "message": "Ayni roaming kullanimi iki kez ucretlendirilmistir."
+      "message": "The same roaming usage was charged twice."
     }
   ]
 }
@@ -285,7 +285,7 @@ Base the explanation on `checks`; do not dispute checks where `chargeValid=true`
 {
   "customerId": "CUST-1001",
   "type": "BILLING_DISPUTE",
-  "description": "Roaming kullanimi iki kez ucretlendirilmis.",
+  "description": "The same roaming usage was charged twice.",
   "billId": "BILL-2026-07-1001",
   "disputedAmount": 450,
   "evidence": ["BI-4", "BI-5", "USG-ROAMING-1001"]
