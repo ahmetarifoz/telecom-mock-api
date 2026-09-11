@@ -10,5 +10,8 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "swagger-ui-dist": "^5.29.5"
   }
 }

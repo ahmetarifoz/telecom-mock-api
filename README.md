@@ -41,6 +41,8 @@ Sunucu basladiktan sonra senaryolari ve tum API zincirlerini gosteren web sayfas
 
 - API katalogu: [http://localhost:3000](http://localhost:3000)
 - Alternatif adres: [http://localhost:3000/docs](http://localhost:3000/docs)
+- Swagger UI: [http://localhost:3000/swagger](http://localhost:3000/swagger)
+- OpenAPI JSON: [http://localhost:3000/openapi.json](http://localhost:3000/openapi.json)
 - Agent guide raw Markdown: [http://localhost:3000/agent-guide.md](http://localhost:3000/agent-guide.md)
 - Health check: [http://localhost:3000/health](http://localhost:3000/health)
 
@@ -211,6 +213,7 @@ Bu server downstream davranisini saglar; su kontroller gercek `llm_service`, `co
 | Dosya | Aciklama |
 | --- | --- |
 | `server.js` | Mock veriler, endpoint'ler ve bellek ici transaction kayitlari |
+| `openapi.js` | Swagger UI tarafindan kullanilan OpenAPI 3.0 sozlesmesi |
 | `index.html` | `/` ve `/docs` adreslerinden sunulan API katalog sayfasi |
 | `server.test.js` | Tum senaryolarin happy-path ve failure-branch testleri |
 | `API.md` | Ayrintili JSON request/response sozlesmeleri |

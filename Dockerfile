@@ -7,7 +7,7 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
-COPY --chown=node:node server.js index.html AGENT_API_CHAINS.md ./
+COPY --chown=node:node server.js openapi.js index.html AGENT_API_CHAINS.md ./
 
 USER node
 

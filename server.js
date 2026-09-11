@@ -2,10 +2,43 @@ const http = require("node:http");
 const { randomUUID } = require("node:crypto");
 const { readFileSync } = require("node:fs");
 const { join } = require("node:path");
+const OPENAPI_DOCUMENT = require("./openapi");
 
 const PORT = Number(process.env.PORT || 3000);
 const DOCS_PAGE = readFileSync(join(__dirname, "index.html"), "utf8");
 const AGENT_GUIDE = readFileSync(join(__dirname, "AGENT_API_CHAINS.md"), "utf8");
+const SWAGGER_UI_ASSETS = new Map([
+  ["/swagger/swagger-ui.css", [require.resolve("swagger-ui-dist/swagger-ui.css"), "text/css; charset=utf-8"]],
+  ["/swagger/swagger-ui-bundle.js", [require.resolve("swagger-ui-dist/swagger-ui-bundle.js"), "text/javascript; charset=utf-8"]],
+  ["/swagger/swagger-ui-standalone-preset.js", [require.resolve("swagger-ui-dist/swagger-ui-standalone-preset.js"), "text/javascript; charset=utf-8"]],
+]);
+
+const SWAGGER_PAGE = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Telecom Agent Mock API — Swagger</title>
+    <link rel="stylesheet" href="/swagger/swagger-ui.css" />
+    <style>body { margin: 0; background: #fafafa; }</style>
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="/swagger/swagger-ui-bundle.js"></script>
+    <script src="/swagger/swagger-ui-standalone-preset.js"></script>
+    <script>
+      window.ui = SwaggerUIBundle({
+        url: "/openapi.json",
+        dom_id: "#swagger-ui",
+        deepLinking: true,
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+        layout: "StandaloneLayout"
+      });
+    </script>
+  </body>
+</html>`;
 
 const customer = {
   customerId: "CUST-1001",
@@ -263,6 +296,14 @@ function sendMarkdown(response, markdown) {
   response.end(markdown);
 }
 
+function sendAsset(response, filePath, contentType) {
+  response.writeHead(200, {
+    "Content-Type": contentType,
+    "Cache-Control": "public, max-age=86400",
+  });
+  response.end(readFileSync(filePath));
+}
+
 async function readJson(request) {
   const bodyText = await readText(request);
   if (!bodyText) return {};
@@ -309,6 +350,22 @@ async function handleRequest(request, response) {
 
   if (request.method === "GET" && (pathname === "/" || pathname === "/docs")) {
     sendHtml(response, 200, DOCS_PAGE);
+    return;
+  }
+
+  if (request.method === "GET" && (pathname === "/swagger" || pathname === "/swagger/")) {
+    sendHtml(response, 200, SWAGGER_PAGE);
+    return;
+  }
+
+  if (request.method === "GET" && pathname === "/openapi.json") {
+    sendJson(response, 200, OPENAPI_DOCUMENT);
+    return;
+  }
+
+  if (request.method === "GET" && SWAGGER_UI_ASSETS.has(pathname)) {
+    const [filePath, contentType] = SWAGGER_UI_ASSETS.get(pathname);
+    sendAsset(response, filePath, contentType);
     return;
   }
 

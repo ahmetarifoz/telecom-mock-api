@@ -59,6 +59,28 @@ test("documentation page is served from root and docs", async () => {
   }
 });
 
+test("swagger UI and OpenAPI document are served", async () => {
+  const swaggerResponse = await fetch(`${baseUrl}/swagger`);
+  const swaggerHtml = await swaggerResponse.text();
+  assert.equal(swaggerResponse.status, 200);
+  assert.match(swaggerResponse.headers.get("content-type"), /^text\/html/);
+  assert.match(swaggerHtml, /SwaggerUIBundle/);
+  assert.match(swaggerHtml, /\/openapi\.json/);
+
+  const specResponse = await fetch(`${baseUrl}/openapi.json`);
+  const spec = await specResponse.json();
+  assert.equal(specResponse.status, 200);
+  assert.equal(spec.openapi, "3.0.3");
+  assert.equal(spec.info.title, "Telecom Agent Mock API");
+  assert.ok(spec.paths["/api/customers/search"]);
+  assert.ok(spec.paths["/api/appointments"]);
+  assert.equal(spec.components.securitySchemes.BearerAuth.scheme, "bearer");
+
+  const assetResponse = await fetch(`${baseUrl}/swagger/swagger-ui.css`);
+  assert.equal(assetResponse.status, 200);
+  assert.match(assetResponse.headers.get("content-type"), /^text\/css/);
+});
+
 test("agent guide is served as markdown", async () => {
   const response = await fetch(`${baseUrl}/agent-guide.md`);
   const markdown = await response.text();
